@@ -49,6 +49,10 @@ export class CartService {
     const product = await this.productsService.findById(productId);
     if (!product) throw new NotFoundException('Product not found');
 
+    if (qty > product.countInStock) {
+      throw new BadRequestException('Not enough stock');
+    }
+
     const cart = await this.getCart(user);
     const existingItem = cart.items.find(
       item => item.productId.toString() === productId,
