@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { OrdersService } from '../services/orders.service';
-import { UserDocument } from '@/users/schemas/user.schema';
+import { User } from '@/users/entities/user.entity';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
@@ -19,8 +19,8 @@ export class OrdersController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createOrder(@Body() body: any, @CurrentUser() user: UserDocument) {
-    return this.ordersService.create(body, user._id.toString());
+  async createOrder(@Body() body: any, @CurrentUser() user: User) {
+    return this.ordersService.create(body, user.id);
   }
 
   @UseGuards(AdminGuard)
@@ -31,8 +31,8 @@ export class OrdersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('myorders')
-  async getUserOrders(@CurrentUser() user: UserDocument) {
-    return this.ordersService.findUserOrders(user._id.toString());
+  async getUserOrders(@CurrentUser() user: User) {
+    return this.ordersService.findUserOrders(user.id);
   }
 
   @UseGuards(JwtAuthGuard)

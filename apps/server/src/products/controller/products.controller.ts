@@ -20,7 +20,7 @@ import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { ProductDto } from '../dtos/product.dto';
 import { ReviewDto } from '../dtos/review.dto';
 import { ProductsService } from '../services/products.service';
-import { UserDocument } from '@/users/schemas/user.schema';
+import { User } from '@/users/entities/user.entity';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { AppService } from '@/app/services/app.service';
@@ -108,7 +108,7 @@ export class ProductsController {
   createReview(
     @Param('id') id: string,
     @Body() { rating, comment }: ReviewDto,
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
   ) {
     return this.productsService.createReview(id, user, rating, comment);
   }

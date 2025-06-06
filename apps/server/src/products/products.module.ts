@@ -1,27 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ProductsService } from './services/products.service';
 import { ProductsController } from './controller/products.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Product, ProductSchema } from './schemas/product.schema';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Product } from './entities/product.entity';
+import { Review } from './entities/review.entity';
 import { AppService } from '@/app/services/app.service';
 import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
 import { AiModule } from '@/ai/ai.module';
 import { ProductExpertAgent } from '@/ai/agents/product-expert.agent';
-import { Order } from '@/orders/schemas/order.schema';
-import { OrderSchema } from '@/orders/schemas/order.schema';
+import { Order } from '@/orders/entities/order.entity';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      {
-        name: Product.name,
-        schema: ProductSchema,
-      },
-      {
-        name: Order.name,
-        schema: OrderSchema,
-      },
-    ]),
+    TypeOrmModule.forFeature([Product, Review, Order]),
     CloudinaryModule,
     AiModule,
   ],

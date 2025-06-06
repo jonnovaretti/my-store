@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { connectDB } from '../utils/config';
 import { ProductsModule } from '../products/products.module';
 import { UsersModule } from 'src/users/users.module';
@@ -19,7 +19,7 @@ import { AiModule } from '@/ai/ai.module';
       isGlobal: true,
       envFilePath: ['.env'],
     }),
-    MongooseModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: connectDB,
     }),

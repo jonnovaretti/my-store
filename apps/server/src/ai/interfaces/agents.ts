@@ -1,4 +1,4 @@
-import { Product } from '@/products/schemas/product.schema';
+import { Product } from '@/products/entities/product.entity';
 
 export interface ValidationError {
   field: string;

@@ -3,26 +3,28 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { UserDocument } from 'src/users/schemas/user.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, ILike } from 'typeorm';
 import { sampleProduct } from '../../utils/data/product';
-import { Product, ProductDocument } from '../schemas/product.schema';
+import { Product } from '../entities/product.entity';
+import { Review } from '../entities/review.entity';
 import { PaginatedResponse } from '../../../../shared/types';
-import { Order } from '../../orders/schemas/order.schema';
+import { Order } from '../../orders/entities/order.entity';
+import { User } from '@/users/entities/user.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectModel(Product.name) private productModel: Model<Product>,
-    @InjectModel(Order.name) private orderModel: Model<Order>,
+    @InjectRepository(Product) private productRepo: Repository<Product>,
+    @InjectRepository(Order) private orderRepo: Repository<Order>,
+    @InjectRepository(Review) private reviewRepo: Repository<Review>,
   ) {}
 
-  async findTopRated(): Promise<ProductDocument[]> {
-    const products = await this.productModel
-      .find({})
-      .sort({ rating: -1 })
-      .limit(3);
+  async findTopRated(): Promise<Product[]> {
+    const products = await this.productRepo.find({
+      order: { rating: 'DESC' },
+      take: 3,
+    });
 
     if (!products.length) throw new NotFoundException('No products found.');
 
@@ -39,29 +41,20 @@ export class ProductsService {
 
     const decodedKeyword = keyword ? decodeURIComponent(keyword) : '';
 
-    const searchPattern = decodedKeyword
-      ? decodedKeyword
-          .split(' ')
-          .map(term => `(?=.*${term})`)
-          .join('')
-      : '';
+    const where = decodedKeyword
+      ? [
+          { name: ILike(`%${decodedKeyword}%`) },
+          { description: ILike(`%${decodedKeyword}%`) },
+          { brand: ILike(`%${decodedKeyword}%`) },
+          { category: ILike(`%${decodedKeyword}%`) },
+        ]
+      : undefined;
 
-    const searchQuery = decodedKeyword
-      ? {
-          $or: [
-            { name: { $regex: searchPattern, $options: 'i' } },
-            { description: { $regex: searchPattern, $options: 'i' } },
-            { brand: { $regex: searchPattern, $options: 'i' } },
-            { category: { $regex: searchPattern, $options: 'i' } },
-          ],
-        }
-      : {};
-
-    const count = await this.productModel.countDocuments(searchQuery);
-    const products = await this.productModel
-      .find(searchQuery)
-      .limit(pageSize)
-      .skip(pageSize * (currentPage - 1));
+    const [products, count] = await this.productRepo.findAndCount({
+      where,
+      take: pageSize,
+      skip: pageSize * (currentPage - 1),
+    });
 
     if (!products.length) throw new NotFoundException('No products found.');
 
@@ -73,30 +66,27 @@ export class ProductsService {
     };
   }
 
-  async findById(id: string): Promise<ProductDocument> {
-    if (!Types.ObjectId.isValid(id))
-      throw new BadRequestException('Invalid product ID.');
-
-    const product = await this.productModel.findById(id);
+  async findById(id: string): Promise<Product> {
+    const product = await this.productRepo.findOne({ where: { id } });
 
     if (!product) throw new NotFoundException('No product with given ID.');
 
     return product;
   }
 
-  async createMany(products: Partial<Product>[]): Promise<ProductDocument[]> {
-    const createdProducts = await this.productModel.insertMany(products);
+  async createMany(products: Partial<Product>[]): Promise<Product[]> {
+    const createdProducts = await this.productRepo.save(products);
 
-    return createdProducts as unknown as ProductDocument[];
+    return createdProducts;
   }
 
-  async createSample(): Promise<ProductDocument> {
-    const createdProduct = await this.productModel.create(sampleProduct);
+  async createSample(): Promise<Product> {
+    const createdProduct = await this.productRepo.save(sampleProduct as Product);
 
     return createdProduct;
   }
 
-  async update(id: string, attrs: Partial<Product>): Promise<ProductDocument> {
+  async update(id: string, attrs: Partial<Product>): Promise<Product> {
     const {
       name,
       price,
@@ -108,10 +98,7 @@ export class ProductsService {
       countInStock,
     } = attrs;
 
-    if (!Types.ObjectId.isValid(id))
-      throw new BadRequestException('Invalid product ID.');
-
-    const product = await this.productModel.findById(id);
+    const product = await this.productRepo.findOne({ where: { id } });
     if (!product) throw new NotFoundException('No product with given ID.');
 
     product.name = name ?? product.name;
@@ -123,33 +110,30 @@ export class ProductsService {
     product.category = category ?? product.category;
     product.countInStock = countInStock ?? product.countInStock;
 
-    return product.save();
+    return this.productRepo.save(product);
   }
 
   async createReview(
     id: string,
-    user: UserDocument,
+    user: User,
     rating: number,
     comment: string,
-  ): Promise<ProductDocument> {
-    if (!Types.ObjectId.isValid(id))
-      throw new BadRequestException('Invalid product ID.');
-
-    const product = await this.productModel.findById(id);
+  ): Promise<Product> {
+    const product = await this.productRepo.findOne({ where: { id } });
 
     if (!product) throw new NotFoundException('No product with given ID.');
 
     const alreadyReviewed = product.reviews.find(
-      r => r.user.toString() === user._id.toString(),
+      r => r.user.id === user.id,
     );
 
     if (alreadyReviewed)
       throw new BadRequestException('Product already reviewed!');
 
-    const hasPurchased = await this.orderModel.findOne({
-      user: user._id,
-      'orderItems.productId': id,
-      status: 'delivered',
+    const hasPurchased = await this.orderRepo.findOne({
+      where: {
+        user: { id: user.id },
+      },
     });
 
     if (!hasPurchased)
@@ -157,14 +141,13 @@ export class ProductsService {
         'You can only review products you have purchased',
       );
 
-    const review = {
+    const review = this.reviewRepo.create({
       name: user.name,
       rating,
       comment,
       user,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+      product,
+    });
 
     product.reviews.push(review);
 
@@ -174,34 +157,30 @@ export class ProductsService {
 
     product.numReviews = product.reviews.length;
 
-    const updatedProduct = await product.save();
+    await this.reviewRepo.save(review);
+    const updatedProduct = await this.productRepo.save(product);
 
     return updatedProduct;
   }
 
   async deleteOne(id: string): Promise<void> {
-    if (!Types.ObjectId.isValid(id))
-      throw new BadRequestException('Invalid product ID.');
-
-    const product = await this.productModel.findById(id);
-
-    if (!product) throw new NotFoundException('No product with given ID.');
-
-    await product.deleteOne();
+    const result = await this.productRepo.delete(id);
+    if (!result.affected)
+      throw new NotFoundException('No product with given ID.');
   }
 
   async deleteMany(): Promise<void> {
-    await this.productModel.deleteMany({});
+    await this.productRepo.clear();
   }
 
-  async create(productData: Partial<Product>): Promise<ProductDocument> {
-    const product = await this.productModel.create({
+  async create(productData: Partial<Product>): Promise<Product> {
+    const product = this.productRepo.create({
       ...productData,
       rating: 0,
       numReviews: 0,
       reviews: [],
     });
 
-    return product;
+    return this.productRepo.save(product);
   }
 }

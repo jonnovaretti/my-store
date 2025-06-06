@@ -1,4 +1,4 @@
-import { Product, ProductDocument } from 'src/products/schemas/product.schema';
+import { Product } from 'src/products/entities/product.entity';
 
 export interface ShippingDetails {
   address: string;
@@ -33,7 +33,7 @@ export interface CartItem {
 }
 
 export interface PaginatedProducts {
-  products: ProductDocument[];
+  products: Product[];
   pages: number;
   page: number;
 }

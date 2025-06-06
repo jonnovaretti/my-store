@@ -233,7 +233,7 @@ export class ProductGenerationTool {
 
       return {
         success: true,
-        productId: savedProduct._id.toString(),
+        productId: savedProduct.id,
         message: `Successfully saved ${savedProduct.name} to the database!`,
       };
     } catch (error: any) {

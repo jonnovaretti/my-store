@@ -1,12 +1,14 @@
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
-import { MongooseModuleOptions } from '@nestjs/mongoose';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export const connectDB = (
   configService: ConfigService,
-): MongooseModuleOptions => ({
-  uri: configService.get<string>('MONGODB_URI'),
-  autoIndex: true,
+): TypeOrmModuleOptions => ({
+  type: 'postgres',
+  url: configService.get<string>('DATABASE_URL'),
+  autoLoadEntities: true,
+  synchronize: true,
 });
 
 export const corsConfig = (): CorsOptions => ({

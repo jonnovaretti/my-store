@@ -37,9 +37,7 @@ JWT_ACCESS_SECRET= (any secret key)
 JWT_REFRESH_SECRET= (any secret key)
 CLOUDINARY_CLOUD_NAME= (your cloudinary cloud name)
 CLOUDINARY_API_SECRET= (your cloudinary api secret)
-MONGODB_URI= (your mongodb uri)
-MONGO_USERNAME= (your mongodb username - optional)
-MONGO_PASSWORD= (your mongodb password - optional)
+DATABASE_URL= (your postgres connection string)
 ```
 
 3. Install dependencies
@@ -48,13 +46,7 @@ MONGO_PASSWORD= (your mongodb password - optional)
 pnpm install
 ```
 
-4. Start MongoDB (if running locally with docker compose)
-
-```bash
-pnpm start:mongo
-```
-
-5. Start the NestJS server
+4. Start the NestJS server
 
 ```bash
 pnpm start:dev
@@ -91,7 +83,7 @@ src/
 ├── users/ # Resources (User, Order, Product, etc.)
 │ ├── controller/ # Route controllers
 │ ├── dtos/ # Data transfer objects
-│ ├── schemas/ # MongoDB schemas
+│ ├── entities/ # TypeORM entities
 │ └── services/ # Business logic
 └── utils/ # Helper functions
 ```

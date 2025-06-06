@@ -1,5 +1,4 @@
 import { Expose, Transform } from 'class-transformer';
-import { ObjectId } from 'mongoose';
 
 export class UserDto {
   @Expose()
@@ -7,7 +6,7 @@ export class UserDto {
 
   @Expose()
   @Transform(({ key, obj }) => obj[key])
-  _id!: ObjectId;
+  id!: string;
 
   @Expose()
   name!: string;
