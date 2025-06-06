@@ -3,26 +3,26 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Cart, CartDocument } from '../schemas/cart.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Cart } from '../entities/cart.entity';
 import { ProductsService } from '../../products/services/products.service';
 import { CartItem, ShippingDetails } from '../../interfaces';
-import { UserDocument } from '../../users/schemas/user.schema';
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class CartService {
   constructor(
-    @InjectModel(Cart.name) private cartModel: Model<CartDocument>,
+    @InjectRepository(Cart) private cartRepo: Repository<Cart>,
     private productsService: ProductsService,
   ) {}
 
-  async getCart(user: UserDocument): Promise<CartDocument> {
-    let cart = await this.cartModel.findOne({ userId: user._id });
+  async getCart(user: User): Promise<Cart> {
+    let cart = await this.cartRepo.findOne({ where: { user: { id: user.id } } });
 
     if (!cart) {
-      cart = await this.cartModel.create({
-        userId: user._id,
+      cart = await this.cartRepo.save({
+        user,
         items: [],
       });
     }
@@ -30,7 +30,7 @@ export class CartService {
     return cart;
   }
 
-  private calculatePrices(cart: CartDocument) {
+  private calculatePrices(cart: Cart) {
     cart.itemsPrice = cart.items.reduce(
       (acc, item) => acc + item.price * item.qty,
       0,
@@ -44,8 +44,8 @@ export class CartService {
   async addCartItem(
     productId: string,
     qty: number,
-    user: UserDocument,
-  ): Promise<CartDocument> {
+    user: User,
+  ): Promise<Cart> {
     const product = await this.productsService.findById(productId);
     if (!product) throw new NotFoundException('Product not found');
 
@@ -58,7 +58,7 @@ export class CartService {
       existingItem.qty = qty;
     } else {
       const cartItem: CartItem = {
-        productId: product._id.toString(),
+        productId: product.id,
         name: product.name,
         image: product.images[0],
         price: product.price,
@@ -69,26 +69,26 @@ export class CartService {
     }
 
     this.calculatePrices(cart);
-    return cart.save();
+    return this.cartRepo.save(cart);
   }
 
   async removeCartItem(
     productId: string,
-    user: UserDocument,
-  ): Promise<CartDocument> {
+    user: User,
+  ): Promise<Cart> {
     const cart = await this.getCart(user);
     cart.items = cart.items.filter(
       item => item.productId.toString() !== productId,
     );
     this.calculatePrices(cart);
-    return cart.save();
+    return this.cartRepo.save(cart);
   }
 
   async updateCartItemQty(
     productId: string,
     qty: number,
-    user: UserDocument,
-  ): Promise<CartDocument> {
+    user: User,
+  ): Promise<Cart> {
     const cart = await this.getCart(user);
     const item = cart.items.find(
       item => item.productId.toString() === productId,
@@ -100,14 +100,14 @@ export class CartService {
 
     item.qty = qty;
     this.calculatePrices(cart);
-    return cart.save();
+    return this.cartRepo.save(cart);
   }
 
-  async clearCart(user: UserDocument): Promise<CartDocument> {
+  async clearCart(user: User): Promise<Cart> {
     const cart = await this.getCart(user);
     cart.items = [];
     this.calculatePrices(cart);
-    return cart.save();
+    return this.cartRepo.save(cart);
   }
 
   validateShippingDetails(shippingDetails: ShippingDetails): ShippingDetails {

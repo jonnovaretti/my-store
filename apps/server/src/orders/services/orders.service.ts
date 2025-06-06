@@ -3,19 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { PaymentResult } from 'src/interfaces';
-import { Order, OrderDocument } from '../schemas/order.schema';
+import { Order } from '../entities/order.entity';
 
 @Injectable()
 export class OrdersService {
-  constructor(@InjectModel(Order.name) private orderModel: Model<Order>) {}
+  constructor(@InjectRepository(Order) private orderRepo: Repository<Order>) {}
 
   async create(
     orderAttrs: Partial<Order>,
     userId: string,
-  ): Promise<OrderDocument> {
+  ): Promise<Order> {
     const {
       orderItems,
       shippingDetails,
@@ -29,8 +29,8 @@ export class OrdersService {
     if (orderItems && orderItems.length < 1)
       throw new BadRequestException('No order items received.');
 
-    const createdOrder = await this.orderModel.create({
-      user: userId,
+    const createdOrder = await this.orderRepo.save({
+      user: { id: userId } as any,
       orderItems,
       shippingDetails,
       paymentMethod,
@@ -43,19 +43,14 @@ export class OrdersService {
     return createdOrder;
   }
 
-  async findAll(): Promise<OrderDocument[]> {
-    const orders = await this.orderModel.find();
+  async findAll(): Promise<Order[]> {
+    const orders = await this.orderRepo.find();
 
     return orders;
   }
 
-  async findById(id: string): Promise<OrderDocument> {
-    if (!Types.ObjectId.isValid(id))
-      throw new BadRequestException('Invalid order ID.');
-
-    const order = await this.orderModel
-      .findById(id)
-      .populate('user', 'name email');
+  async findById(id: string): Promise<Order> {
+    const order = await this.orderRepo.findOne({ where: { id }, relations: ['user'] });
 
     if (!order) throw new NotFoundException('No order with given ID.');
 
@@ -65,11 +60,8 @@ export class OrdersService {
   async updatePaid(
     id: string,
     paymentResult: PaymentResult,
-  ): Promise<OrderDocument> {
-    if (!Types.ObjectId.isValid(id))
-      throw new BadRequestException('Invalid order ID.');
-
-    const order = await this.orderModel.findById(id);
+  ): Promise<Order> {
+    const order = await this.orderRepo.findOne({ where: { id } });
 
     if (!order) throw new NotFoundException('No order with given ID.');
 
@@ -77,29 +69,26 @@ export class OrdersService {
     order.paidAt = Date();
     order.paymentResult = paymentResult;
 
-    const updatedOrder = await order.save();
+    const updatedOrder = await this.orderRepo.save(order);
 
     return updatedOrder;
   }
 
-  async updateDelivered(id: string): Promise<OrderDocument> {
-    if (!Types.ObjectId.isValid(id))
-      throw new BadRequestException('Invalid order ID.');
-
-    const order = await this.orderModel.findById(id);
+  async updateDelivered(id: string): Promise<Order> {
+    const order = await this.orderRepo.findOne({ where: { id } });
 
     if (!order) throw new NotFoundException('No order with given ID.');
 
     order.isDelivered = true;
     order.deliveredAt = Date();
 
-    const updatedOrder = await order.save();
+    const updatedOrder = await this.orderRepo.save(order);
 
     return updatedOrder;
   }
 
   async findUserOrders(userId: string) {
-    const orders = await this.orderModel.find({ user: userId });
+    const orders = await this.orderRepo.find({ where: { user: { id: userId } } });
 
     return orders;
   }
