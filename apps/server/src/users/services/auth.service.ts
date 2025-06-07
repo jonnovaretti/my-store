@@ -114,6 +114,6 @@ export class AuthService {
   }
 
   async logout(userId: string): Promise<void> {
-    await this.userRepo.update(userId, { refreshToken: null });
+    await this.userRepo.update(userId, { refreshToken: undefined });
   }
 }

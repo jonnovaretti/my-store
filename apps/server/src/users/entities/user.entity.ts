@@ -18,7 +18,7 @@ export class User {
   isAdmin!: boolean;
 
   @Column({ nullable: true })
-  refreshToken?: string | null;
+  refreshToken?: string;
 
   @CreateDateColumn()
   createdAt!: Date;

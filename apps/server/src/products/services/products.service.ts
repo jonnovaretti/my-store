@@ -80,12 +80,6 @@ export class ProductsService {
     return createdProducts;
   }
 
-  async createSample(): Promise<Product> {
-    const createdProduct = await this.productRepo.save(sampleProduct as Product);
-
-    return createdProduct;
-  }
-
   async update(id: string, attrs: Partial<Product>): Promise<Product> {
     const {
       name,
