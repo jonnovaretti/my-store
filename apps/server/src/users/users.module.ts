@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './controller/auth.controller';
-import { User, UserSchema } from './schemas/user.schema';
+import { User } from './entities/user.entity';
 import { UsersService } from './services/users.service';
 import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -12,12 +12,7 @@ import { UsersController } from './controller/users.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      {
-        name: User.name,
-        schema: UserSchema,
-      },
-    ]),
+    TypeOrmModule.forFeature([User]),
     PassportModule,
     JwtModule.register({
       global: true,

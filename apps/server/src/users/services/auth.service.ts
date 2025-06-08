@@ -2,9 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthResponseDto, TokensDto, TokenPayload } from '../dtos/auth.dto';
-import { User, UserDocument } from '../schemas/user.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { User } from '../entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { verifyPassword } from '@/utils/password';
 import { randomUUID } from 'crypto';
 
@@ -13,10 +13,10 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<UserDocument> {
+  async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findOne(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -30,13 +30,13 @@ export class AuthService {
     return user;
   }
 
-  async login(user: UserDocument): Promise<AuthResponseDto> {
+  async login(user: User): Promise<AuthResponseDto> {
     const tokens = await this.generateTokens(user);
 
     return {
       tokens,
       user: {
-        id: user._id.toString(),
+        id: user.id,
         email: user.email,
         name: user.name,
         isAdmin: user.isAdmin,
@@ -44,13 +44,13 @@ export class AuthService {
     };
   }
 
-  private async generateTokens(user: UserDocument): Promise<TokensDto> {
+  private async generateTokens(user: User): Promise<TokensDto> {
     const jti = randomUUID();
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
-          sub: user._id.toString(),
+          sub: user.id,
           email: user.email,
           isAdmin: user.isAdmin,
           type: 'access',
@@ -62,7 +62,7 @@ export class AuthService {
       ),
       this.jwtService.signAsync(
         {
-          sub: user._id.toString(),
+          sub: user.id,
           email: user.email,
           isAdmin: user.isAdmin,
           type: 'refresh',
@@ -75,7 +75,7 @@ export class AuthService {
       ),
     ]);
 
-    await this.userModel.findByIdAndUpdate(user._id, {
+    await this.userRepo.update(user.id, {
       refreshToken: jti,
     });
 
@@ -98,7 +98,7 @@ export class AuthService {
         throw new UnauthorizedException();
       }
 
-      const user = await this.userModel.findById(payload.sub);
+      const user = await this.userRepo.findOne({ where: { id: payload.sub } });
       if (!user || !user.refreshToken) {
         throw new UnauthorizedException();
       }
@@ -114,8 +114,6 @@ export class AuthService {
   }
 
   async logout(userId: string): Promise<void> {
-    await this.userModel.findByIdAndUpdate(userId, {
-      refreshToken: null,
-    });
+    await this.userRepo.update(userId, { refreshToken: undefined });
   }
 }

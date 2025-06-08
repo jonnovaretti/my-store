@@ -1,12 +1,12 @@
-import { Model, Types } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import {
   BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { User, UserDocument } from '../schemas/user.schema';
+import { User } from '../entities/user.entity';
 import { hashPassword } from '@/utils/password';
 import { generateUsers } from '@/utils/seed-users';
 import { PaginatedResponse } from '@apps/shared/types';
@@ -15,12 +15,12 @@ import { PaginatedResponse } from '@apps/shared/types';
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
-  async create(user: Partial<User>): Promise<UserDocument> {
+  async create(user: Partial<User>): Promise<User> {
     try {
       const hashedPassword = await hashPassword(user.password ?? '');
-      return await this.userModel.create({
+      return await this.userRepo.save({
         ...user,
         password: hashedPassword,
       });
@@ -39,27 +39,22 @@ export class UsersService {
     }
   }
 
-  async createMany(users: Partial<User>[]): Promise<UserDocument[]> {
+  async createMany(users: Partial<User>[]): Promise<User[]> {
     try {
-      return (await this.userModel.insertMany(
-        users,
-      )) as unknown as UserDocument[];
+      const created = await this.userRepo.save(users);
+      return created;
     } catch (error: any) {
       this.logger.error(`Failed to create users: ${error.message}`);
       throw new BadRequestException('Failed to create users');
     }
   }
 
-  async findOne(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email });
+  async findOne(email: string): Promise<User | null> {
+    return this.userRepo.findOne({ where: { email } });
   }
 
-  async findById(id: string): Promise<UserDocument> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid user ID');
-    }
-
-    const user = await this.userModel.findById(id);
+  async findById(id: string): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -70,18 +65,14 @@ export class UsersService {
   async findAll(
     page: number = 1,
     limit: number = 20,
-  ): Promise<PaginatedResponse<UserDocument>> {
+  ): Promise<PaginatedResponse<User>> {
     const skip = (page - 1) * limit;
 
-    const [users, total] = await Promise.all([
-      this.userModel
-        .find({})
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-      this.userModel.countDocuments({}),
-    ]);
+    const [users, total] = await this.userRepo.findAndCount({
+      order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
+    });
 
     return {
       items: users,
@@ -92,12 +83,8 @@ export class UsersService {
   }
 
   async deleteOne(id: string): Promise<void> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid user ID');
-    }
-
-    const result = await this.userModel.findOneAndDelete({ _id: id });
-    if (!result) {
+    const result = await this.userRepo.delete(id);
+    if (!result.affected) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
   }
@@ -106,14 +93,11 @@ export class UsersService {
     id: string,
     attrs: Partial<User>,
     isAdmin = false,
-  ): Promise<UserDocument> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid user ID');
-    }
+  ): Promise<User> {
 
     if (attrs.email) {
       const existingUser = await this.findOne(attrs.email);
-      if (existingUser && existingUser._id.toString() !== id) {
+      if (existingUser && existingUser.id !== id) {
         throw new BadRequestException('Email is already in use');
       }
     }
@@ -133,16 +117,8 @@ export class UsersService {
     );
 
     try {
-      const updatedUser = await this.userModel.findByIdAndUpdate(
-        id,
-        updateData,
-        { new: true, runValidators: true },
-      );
-
-      if (!updatedUser) {
-        throw new NotFoundException(`User with ID ${id} not found`);
-      }
-
+      await this.userRepo.update(id, updateData);
+      const updatedUser = await this.findById(id);
       this.logger.log(`User ${id} updated successfully`);
       return updatedUser;
     } catch (error: any) {
@@ -151,13 +127,13 @@ export class UsersService {
     }
   }
 
-  async adminUpdate(id: string, attrs: Partial<User>): Promise<UserDocument> {
+  async adminUpdate(id: string, attrs: Partial<User>): Promise<User> {
     return this.update(id, attrs, true);
   }
 
   async deleteMany(): Promise<void> {
     try {
-      await this.userModel.deleteMany({});
+      await this.userRepo.clear();
       this.logger.log('All users deleted successfully');
     } catch (error: any) {
       this.logger.error(`Failed to delete users: ${error.message}`);
@@ -165,7 +141,7 @@ export class UsersService {
     }
   }
 
-  async generateUsers(count: number): Promise<UserDocument[]> {
+  async generateUsers(count: number): Promise<User[]> {
     const generatedUsers = await generateUsers(count);
     return this.createMany(generatedUsers);
   }

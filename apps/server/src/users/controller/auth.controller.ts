@@ -16,7 +16,7 @@ import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { ProfileDto } from '../dtos/profile.dto';
 import { RegisterDto } from '../dtos/register.dto';
 import { UserDto } from '../dtos/user.dto';
-import { UserDocument } from '../schemas/user.schema';
+import { User } from '../entities/user.entity';
 import { AuthService } from '../services/auth.service';
 import { UsersService } from '../services/users.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -74,7 +74,7 @@ export class AuthController {
   @Serialize(UserDto)
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@CurrentUser() user: UserDocument) {
+  getProfile(@CurrentUser() user: User) {
     return user;
   }
 
@@ -106,10 +106,10 @@ export class AuthController {
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   async logout(
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
     @Res({ passthrough: true }) response: Response,
   ) {
-    await this.authService.logout(user._id.toString());
+    await this.authService.logout(user.id);
 
     response.clearCookie('access_token');
     response.clearCookie('refresh_token');
@@ -136,9 +136,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
     @Body() updateDto: ProfileDto,
   ) {
-    return this.usersService.update(user._id.toString(), updateDto);
+    return this.usersService.update(user.id, updateDto);
   }
 }

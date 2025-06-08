@@ -1,6 +1,6 @@
 # Elecshop - Modern eCommerce Platform
 
-A full-stack eCommerce platform built with Next.js, Nest.js, and MongoDB, featuring AI-powered product management and modern authentication.
+A full-stack eCommerce platform built with Next.js, Nest.js, and PostgreSQL, featuring AI-powered product management and modern authentication.
 
 ![Elecshop preview image](./apps/web/public/images/preview.png)
 
@@ -42,7 +42,7 @@ A full-stack eCommerce platform built with Next.js, Nest.js, and MongoDB, featur
 
 ### Backend
 - Nest.js with TypeScript
-- MongoDB with Mongoose
+ - PostgreSQL with TypeORM
 - JWT Authentication
 - Swagger API Documentation
 - Argon2 for password hashing
@@ -63,7 +63,7 @@ A full-stack eCommerce platform built with Next.js, Nest.js, and MongoDB, featur
 ### Prerequisites
 - Node.js (v16 or higher)
 - pnpm (preferred package manager)
-- MongoDB instance (Docker preferred)
+ - PostgreSQL instance (Docker preferred)
 
 
 ## Running Locally 🖥️
@@ -117,9 +117,7 @@ Add Environment Variables - Server
   - `CLOUDINARY_CLOUD_NAME`
   - `CLOUDINARY_API_KEY`
   - `CLOUDINARY_API_SECRET`
-  - `MONGODB_URI`
-  - `MONGO_USERNAME`
-  - `MONGO_PASSWORD`
+  - `DATABASE_URL`
   - `REPLICATE_API_TOKEN`
   - `OPENAI_API_KEY`
 </details>

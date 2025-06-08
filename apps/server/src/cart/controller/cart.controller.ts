@@ -15,7 +15,7 @@ import { CartService } from '../services/cart.service';
 import { AddToCartDto } from '../dtos/add-to-cart.dto';
 import { SaveShippingDetailsDto } from '../dtos/save-shipping-details.dto';
 import { SavePaymentMethodDto } from '../dtos/save-payment-method.dto';
-import { UserDocument } from '../../users/schemas/user.schema';
+import { User } from '../../users/entities/user.entity';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
@@ -23,14 +23,14 @@ export class CartController {
   constructor(private cartService: CartService) {}
 
   @Get()
-  getCart(@CurrentUser() user: UserDocument) {
+  getCart(@CurrentUser() user: User) {
     return this.cartService.getCart(user);
   }
 
   @Post('items')
   addToCart(
     @Body() { productId, qty }: AddToCartDto,
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
   ) {
     if (!productId) {
       throw new BadRequestException('Product ID is required');
@@ -42,7 +42,7 @@ export class CartController {
   updateCartItem(
     @Param('productId') productId: string,
     @Body('qty') qty: number,
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
   ) {
     return this.cartService.updateCartItemQty(productId, qty, user);
   }
@@ -50,7 +50,7 @@ export class CartController {
   @Delete('items/:productId')
   removeFromCart(
     @Param('productId') productId: string,
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
   ) {
     return this.cartService.removeCartItem(productId, user);
   }
@@ -58,7 +58,7 @@ export class CartController {
   @Post('shipping')
   saveShipping(
     @Body() shippingDetails: SaveShippingDetailsDto,
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
   ) {
     return this.cartService.validateShippingDetails(shippingDetails);
   }
@@ -66,13 +66,13 @@ export class CartController {
   @Post('payment')
   savePaymentMethod(
     @Body() { paymentMethod }: SavePaymentMethodDto,
-    @CurrentUser() user: UserDocument,
+    @CurrentUser() user: User,
   ) {
     return this.cartService.validatePaymentMethod(paymentMethod);
   }
 
   @Delete()
-  clearCart(@CurrentUser() user: UserDocument) {
+  clearCart(@CurrentUser() user: User) {
     return this.cartService.clearCart(user);
   }
 }
