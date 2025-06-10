@@ -19,7 +19,7 @@ export class AiConfigService {
     });
 
     this.openAIModel = wrapLanguageModel({
-      model: openai('gpt-3.5-turbo'),
+      model: openai('gpt-4o'),
       middleware: customMiddleware,
     });
   }
