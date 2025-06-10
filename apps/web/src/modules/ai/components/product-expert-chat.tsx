@@ -1,5 +1,3 @@
-'use client';
-
 import { useChat } from 'ai/react';
 import { useRef, useState } from 'react';
 import { Message } from './message';
@@ -17,15 +15,13 @@ export default function ProductExpertChat() {
           id: '1',
           role: 'assistant',
           content:
-            "Hi! I'm your product development expert. I can help you:\n\n- Define product features and specifications\n- Generate product visuals and branding\n- Validate market viability\n- Suggest improvements\n\nWhat would you like to develop today?",
+            "Hi! I'm your backoffice agent. I can help you:\n\n- Define product features and specifications\n- Generate product visuals and branding\n- Validate market viability\n- Suggest improvements\n\nWhat would you like to develop today?",
         },
       ],
     });
 
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
-
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
   return (
     <div className="flex flex-col h-[600px] rounded-lg border bg-background">

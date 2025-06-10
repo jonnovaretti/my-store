@@ -48,23 +48,8 @@ export function UserMenu() {
           <Link href="/profile">Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile/orders">Orders</Link>
+          <Link href="/admin/products/ai">Chat</Link>
         </DropdownMenuItem>
-        {user.isAdmin && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Admin Dashboard</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link href="/admin/products">Products</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/admin/users">Users</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/admin/orders">Orders</Link>
-            </DropdownMenuItem>
-          </>
-        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout.mutate()}>
           Sign Out

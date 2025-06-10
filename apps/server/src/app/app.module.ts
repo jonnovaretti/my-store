@@ -5,8 +5,6 @@ import { connectDB } from '../utils/config';
 import { ProductsModule } from '../products/products.module';
 import { UsersModule } from 'src/users/users.module';
 import { CommandModule } from 'nestjs-command';
-import { CartModule } from 'src/cart/cart.module';
-import { OrderModule } from '../orders/order.module';
 // import { SeedsModule } from '../seeds/seeds.module';
 import { AppController } from './controllers/app.controller';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
@@ -26,8 +24,6 @@ import { AiModule } from '@/ai/ai.module';
     CommandModule,
     ProductsModule,
     UsersModule,
-    CartModule,
-    OrderModule,
     CloudinaryModule,
     AiModule,
     // SeedsModule,

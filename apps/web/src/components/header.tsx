@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Container } from '@/components/ui/container';
 import { SearchBox } from '@/components/search-box';
 import { UserMenu } from './navbar/user-menu';
-import { CartIcon } from '@/modules/cart/components/cart-icon';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
@@ -41,7 +40,6 @@ export function Header() {
 
           <nav className="flex items-center gap-4 md:gap-2 sm:hidden">
             <ThemeToggle />
-            <CartIcon />
             <UserMenu />
           </nav>
         </div>
@@ -55,7 +53,6 @@ export function Header() {
               <SearchBox />
               <div className="flex items-center justify-between pt-4 border-t">
                 <ThemeToggle />
-                <CartIcon />
                 <UserMenu />
               </div>
             </div>

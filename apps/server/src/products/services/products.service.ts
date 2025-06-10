@@ -9,14 +9,12 @@ import { sampleProduct } from '../../utils/data/product';
 import { Product } from '../entities/product.entity';
 import { Review } from '../entities/review.entity';
 import { PaginatedResponse } from '../../../../shared/types';
-import { Order } from '../../orders/entities/order.entity';
 import { User } from '@/users/entities/user.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
-    @InjectRepository(Order) private orderRepo: Repository<Order>,
     @InjectRepository(Review) private reviewRepo: Repository<Review>,
   ) {}
 
@@ -105,56 +103,6 @@ export class ProductsService {
     product.countInStock = countInStock ?? product.countInStock;
 
     return this.productRepo.save(product);
-  }
-
-  async createReview(
-    id: string,
-    user: User,
-    rating: number,
-    comment: string,
-  ): Promise<Product> {
-    const product = await this.productRepo.findOne({ where: { id } });
-
-    if (!product) throw new NotFoundException('No product with given ID.');
-
-    const alreadyReviewed = product.reviews.find(
-      r => r.user.id === user.id,
-    );
-
-    if (alreadyReviewed)
-      throw new BadRequestException('Product already reviewed!');
-
-    const hasPurchased = await this.orderRepo.findOne({
-      where: {
-        user: { id: user.id },
-      },
-    });
-
-    if (!hasPurchased)
-      throw new BadRequestException(
-        'You can only review products you have purchased',
-      );
-
-    const review = this.reviewRepo.create({
-      name: user.name,
-      rating,
-      comment,
-      user,
-      product,
-    });
-
-    product.reviews.push(review);
-
-    product.rating =
-      product.reviews.reduce((acc, item) => item.rating + acc, 0) /
-      product.reviews.length;
-
-    product.numReviews = product.reviews.length;
-
-    await this.reviewRepo.save(review);
-    const updatedProduct = await this.productRepo.save(product);
-
-    return updatedProduct;
   }
 
   async deleteOne(id: string): Promise<void> {

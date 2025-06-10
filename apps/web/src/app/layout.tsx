@@ -5,8 +5,6 @@ import { Header } from '@/components/header';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/components/auth-provider';
-import { CartProvider } from '@/modules/cart/context/cart-context';
-import { CheckoutProvider } from '@/modules/checkout/context/checkout-context';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
@@ -32,13 +30,9 @@ export default function RootLayout({
         >
           <Providers>
             <AuthProvider>
-              <CartProvider>
-                <CheckoutProvider>
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                  <Toaster />
-                </CheckoutProvider>
-              </CartProvider>
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Toaster />
             </AuthProvider>
           </Providers>
         </ThemeProvider>

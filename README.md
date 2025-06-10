@@ -1,33 +1,14 @@
-# Elecshop - Modern eCommerce Platform
-
-A full-stack eCommerce platform built with Next.js, Nest.js, and PostgreSQL, featuring AI-powered product management and modern authentication.
-
-![Elecshop preview image](./apps/web/public/images/preview.png)
-
-## Features 🚀
-
-### Core Features
-- Full-featured shopping cart with:
-  - server-side persistence for logged in users
-  - local storage for guests
-- Product reviews and ratings system
-- Advanced product search with pagination
-- User account management & order history
-- Secure authentication with JWT (access & refresh tokens)
-- Role-based access control (Admin/User)
+# Backoffice Chat - AI Integrated
 
 ### AI-Powered Features
 - AI Product Creator for generating product listings (Vercel AI SDK)
 - Image generation for product images (using Replicate)
-- Product Development Expert chat interface
-- Smart product recommendations
+- Expert chat interface
 
 ### Technical Highlights
 - Modern monorepo structure with apps for web and server
 - Type-safe API communication with shared types
 - Real-time updates using modern state management
-- Cloudinary integration for image management
-- Secure payment processing with PayPal and Stripe
 - Modern UI with Shadcn components and Tailwind CSS
 
 ## Tech Stack 💻
@@ -58,33 +39,12 @@ A full-stack eCommerce platform built with Next.js, Nest.js, and PostgreSQL, fea
 - Railway for backend deployment
 - Vercel for frontend deployment
 
-## Getting Started 🏃
-
 ### Prerequisites
 - Node.js (v16 or higher)
 - pnpm (preferred package manager)
  - PostgreSQL instance (Docker preferred)
 
-
 ## Running Locally 🖥️
-
-Clone the project
-
-```bash
-git clone https://github.com/NightClover-code/modern-ecommerce.git
-```
-
-Go to the project directory
-
-```bash
-cd modern-ecommerce
-```
-
-Remove remote origin
-
-```bash
-git remote remove origin
-```
 
 Install dependencies (root)
 

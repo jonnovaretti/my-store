@@ -8,11 +8,10 @@ import { AppService } from '@/app/services/app.service';
 import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
 import { AiModule } from '@/ai/ai.module';
 import { ProductExpertAgent } from '@/ai/agents/product-expert.agent';
-import { Order } from '@/orders/entities/order.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product, Review, Order]),
+    TypeOrmModule.forFeature([Product, Review]),
     CloudinaryModule,
     AiModule,
   ],

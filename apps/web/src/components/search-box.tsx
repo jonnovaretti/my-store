@@ -21,7 +21,7 @@ export function SearchBox() {
     <form onSubmit={onSubmit} className="flex w-full items-center space-x-2">
       <Input
         type="text"
-        placeholder="Search products..."
+        placeholder="Search chat..."
         value={keyword}
         onChange={e => setKeyword(e.target.value)}
         className="h-9 md:text-sm"
