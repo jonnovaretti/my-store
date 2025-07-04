@@ -16,7 +16,7 @@ A robust authentication system built with NestJS, featuring JWT-based authentica
 ## Prerequisites
 
 - Node.js (v16 or higher)
-- Docker (recommended) 
+- Docker (recommended)
 - pnpm (preferred)
 
 ## Getting Started
@@ -35,8 +35,6 @@ PORT=4000 (or any available port)
 JWT_SECRET= (any secret key)
 JWT_ACCESS_SECRET= (any secret key)
 JWT_REFRESH_SECRET= (any secret key)
-CLOUDINARY_CLOUD_NAME= (your cloudinary cloud name)
-CLOUDINARY_API_SECRET= (your cloudinary api secret)
 DATABASE_URL= (your postgres connection string)
 ```
 
@@ -87,26 +85,3 @@ src/
 │ └── services/ # Business logic
 └── utils/ # Helper functions
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Coding Standards
-
-- Follow the existing code style
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation as needed
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, email [hello@achrafdev.com](mailto:hello@achrafdev.com) or open an issue in the repository.

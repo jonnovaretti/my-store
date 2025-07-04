@@ -7,8 +7,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from '../entities/user.entity';
-import { hashPassword } from '@/utils/password';
-import { generateUsers } from '@/utils/seed-users';
+import { hashPassword } from '@utils/password';
+import { generateUsers } from '@utils/seed-users';
 import { PaginatedResponse } from '@apps/shared/types';
 
 @Injectable()
@@ -94,7 +94,6 @@ export class UsersService {
     attrs: Partial<User>,
     isAdmin = false,
   ): Promise<User> {
-
     if (attrs.email) {
       const existingUser = await this.findOne(attrs.email);
       if (existingUser && existingUser.id !== id) {

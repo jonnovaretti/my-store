@@ -1,12 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from './users.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthResponseDto, TokensDto, TokenPayload } from '../dtos/auth.dto';
-import { User } from '../entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { verifyPassword } from '@/utils/password';
+import { verifyPassword } from '@utils/password';
 import { randomUUID } from 'crypto';
+import { Repository } from 'typeorm';
+import { AuthResponseDto, TokenPayload, TokensDto } from '../dtos/auth.dto';
+import { User } from '../entities/user.entity';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class AuthService {

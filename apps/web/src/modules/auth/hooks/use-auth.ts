@@ -1,9 +1,9 @@
 'use client';
 
+import { toast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { authApi } from '../api/auth-api';
-import { toast } from '@/hooks/use-toast';
 
 export function useLogin() {
   const router = useRouter();
@@ -19,11 +19,12 @@ export function useLogin() {
         description: `Signed in as ${data.user.email}`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
+      console.error(error);
       toast({
         variant: 'destructive',
         title: 'Oops!',
-        description: error.response?.data?.message || 'Login failed',
+        description: 'Login failed',
       });
     },
   });
@@ -43,11 +44,12 @@ export function useRegister() {
         description: `Account created successfully`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
+      console.error(error);
       toast({
         variant: 'destructive',
         title: 'Oops!',
-        description: error.response?.data?.message || 'Registration failed',
+        description: 'Registration failed',
       });
     },
   });
@@ -55,21 +57,24 @@ export function useRegister() {
 
 export function useLogout() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: authApi.logout,
     onSuccess: () => {
+      router.push('/');
       queryClient.setQueryData(['user'], null);
       toast({
         title: 'Signed out',
         description: 'You have been signed out',
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
+      console.error(error);
       toast({
         variant: 'destructive',
         title: 'Oops!',
-        description: error.response?.data?.message || 'Logout failed',
+        description: 'Unexpected error happened while logout',
       });
     },
   });

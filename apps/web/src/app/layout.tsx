@@ -8,8 +8,8 @@ import { AuthProvider } from '@/components/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'Elecshop',
-  description: 'Modern eCommerce platform',
+  title: 'Move monitor',
+  description: 'Move monitor platform',
 };
 
 export default function RootLayout({

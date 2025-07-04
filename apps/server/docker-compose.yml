@@ -1,13 +1,13 @@
 services:
   postgres:
     image: postgres:16
-    container_name: modern-ecommerce-postgres
+    container_name: move-monitor-postgres
     ports:
       - '5432:5432'
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-admin}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
-      - POSTGRES_DB=elecshop
+      - POSTGRES_DB=move-monitor
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

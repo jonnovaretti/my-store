@@ -2,14 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { connectDB } from '../utils/config';
-import { ProductsModule } from '../products/products.module';
 import { UsersModule } from 'src/users/users.module';
 import { CommandModule } from 'nestjs-command';
-// import { SeedsModule } from '../seeds/seeds.module';
-import { AppController } from './controllers/app.controller';
-import { CloudinaryModule } from '../cloudinary/cloudinary.module';
-import { AppService } from './services/app.service';
-import { AiModule } from '@/ai/ai.module';
 
 @Module({
   imports: [
@@ -22,13 +16,9 @@ import { AiModule } from '@/ai/ai.module';
       useFactory: connectDB,
     }),
     CommandModule,
-    ProductsModule,
     UsersModule,
-    CloudinaryModule,
-    AiModule,
-    // SeedsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
